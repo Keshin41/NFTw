@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+	<meta charset="UTF-8">
+	<title>Admin | Paniers</title>
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css"/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" rel="stylesheet"
+	      type="text/css"/>
+	<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+	<style>
+        html, body {
+            height: 100%;
+        }
+
+        #dashboard {
+            border-right: solid 1px #afb5be;
+            position: static;
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        i {
+            color: #64748b;
+            font-size: 16px;
+            height: 16px;
+            margin-right: 10px;
+            vertical-align: middle;
+            width: 20px;
+        }
+
+        .section {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 15px;
+            margin-top: 15px;
+            padding: 7px 5px;
+            text-transform: uppercase;
+        }
+
+        .top {
+            border-bottom: solid 1px #afb5be;
+        }
+
+        #newBtn {
+            color: #007bff;
+        }
+
+        #newBtn:hover {
+            color: white;
+        }
+	</style>
+</head>
+<body>
+<div class="float-left h-100" style="width: 15%;">
+	<div id="dashboard" class="p-3 bg-light h-100 m-0">
+		<a th:href="@{/admin}" class="nav-link mb-3">Tableau de bord</a>
+		<ul class="nav nav-pills flex-column mb-auto">
+			<li class="mb-1 mt-3 font-weight-bold section">Utilisateur</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/user}" class="nav-link px-0"><i class="fa fa-user mr-3 px-1"></i>Tout les
+					utilisateurs</a>
+			</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/order}" class="nav-link px-0"><i
+						class="fa fa-cart-arrow-down mr-3 px-1"></i>Toutes
+					les réservations</a>
+			</li>
+
+			<li class="mb-1 mt-3 font-weight-bold section">Commerçant</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/commercant}" class="nav-link p-0"><i class="fa fa-store mr-3 px-1"></i>Tout les
+					commerçants</a>
+			</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/commercant/category}" class="nav-link px-0"><i class="fa fa-list mr-3 px-1"></i>Catégories</a>
+			</li>
+
+			<li class="mb-1 mt-3 font-weight-bold section">Panier</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/panier}" class="nav-link p-0"><i class="fa fa-shopping-basket mr-3 px-1"></i>Tout
+					les paniers</a>
+			</li>
+			<li class="nav-item">
+				<a th:href="@{/admin/panier/category}" class="nav-link px-0"><i class="fa fa-list mr-3 px-1"></i>Catégories</a>
+			</li>
+
+			<li class="mb-1 mt-3 font-weight-bold section"></li>
+			<li class="nav-item">
+				<a th:href="@{/}" class="nav-link px-0"><i class="fa fa-arrow-left mr-3 px-1"></i>Retour</a>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="float-right" style="width: 85%;">
+	<div class="bg-light top">
+		<p class="p-3 text-right m-0" th:text="${#authentication.getPrincipal().getFullName()}">Admin</p>
+	</div>
+	<!-- Content -->
+	<div class="p-3">
+		<h1 th:if="${panier.id == null}">Nouveau panier</h1>
+		<h1 th:unless="${panier.id == null}">Modifier panier</h1>
+
+		<form th:action="@{/admin/panier/save}" th:object="${panier}" method="post">
+			<input type="hidden" th:field="*{id}" th:value="${panier.id}">
+			<div class="row form-group">
+				<label class="col-form-label col-4" for="description">Description :</label>
+				<div class="col-8">
+					<textarea id="description" th:field="*{description}" class="form-control"></textarea>
+					<p th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</p>
+				</div>
+			</div>
+			<div class="row form-group">
+				<label class="col-form-label col-4" for="prix">Prix :</label>
+				<div class="col-8">
+					<input class="form-control" id="prix" type="number" step="0.01" min="0.00" th:value="${panier.prix}" th:field="*{prix}">
+				</div>
+			</div>
+			<div class="row form-group">
+				<label class="col-form-label col-4" for="commercant">Commerçant :</label>
+				<div class="col-8">
+					<select id="commercant" class="custom-select" th:field="*{commercant}" required>
+						<th:block th:each="commercant : ${commercants}">
+							<option th:text="${commercant.name}" th:value="${commercant.id}"></option>
+						</th:block>
+					</select>
+				</div>
+			</div>
+			<div class="row form-group">
+				<label class="col-form-label col-4" for="category">Catégorie :</label>
+				<div class="col-8">
+					<select id="category" class="custom-select" th:field="*{category}" required>
+						<th:block th:each="cat : ${categories}">
+							<option th:text="${cat.name}" th:value="${cat.id}"></option>
+						</th:block>
+					</select>
+				</div>
+			</div>
+			<div class="row form-group">
+				<label class="col-form-label col-4" for="validUntil">Validité :</label>
+				<div class="col-8">
+					<input id="validUntil" type="date" th:field="*{validUntil}" class="form-control" required>
+					<p th:if="${#fields.hasErrors('validUntil')}" th:errors="*{validUntil}">Validité error</p>
+				</div>
+			</div>
+			<div>
+				<input type="submit" class="btn btn-outline-primary" value="Valider">
+			</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>

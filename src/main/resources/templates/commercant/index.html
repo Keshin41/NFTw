@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+	<meta charset="UTF-8">
+	<title>Commerçants</title>
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css"/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" rel="stylesheet"
+	      type="text/css"/>
+	<script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+	<style>
+        #resetFilter {
+            text-transform: none;
+            font-weight: normal;
+        }
+
+        #resetFilter:hover {
+            font-style: italic;
+            font-weight: bold;
+        }
+	</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<a class="navbar-brand font-weight-bold" th:href="@{/}">NFTw</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+	        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+			<li class="nav-item">
+				<a class="nav-link" th:href="@{/}">Accueil</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" th:href="@{/commercants}">Commerçants</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" th:href="@{/paniers}">Paniers</a>
+			</li>
+		</ul>
+		<div class="d-inline my-2 mr-sm-2">
+			<div sec:authorize="isAuthenticated()" class="navbar-nav">
+				<div class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+					   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						[[${#authentication.getPrincipal().getFullName()}]]
+					</a>
+					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" th:href="@{/account/orders}">Mes commandes</a>
+						<a sec:authorize="hasAuthority('ADMIN')" class="dropdown-item" th:href="@{/admin}">Panneau
+							d'administration</a>
+						<div class="dropdown-divider"></div>
+						<a th:href="@{/logout}" class="dropdown-item">Se déconnecter</a>
+					</div>
+				</div>
+			</div>
+			<div sec:authorize="isAnonymous()" class="navbar-nav">
+				<a th:href="@{/signup}" class="nav-link">S'inscrire</a>
+				<a th:href="@{/login}" class="nav-link">Se connecter</a>
+			</div>
+		</div>
+	</div>
+</nav>
+<h1 class="container">Commerçants</h1>
+<div class="container mt-3">
+	<div class="d-flex align-items-center">
+		<h2 class="d-inline">Recherche</h2>
+		<a class="text-muted mx-4 text-decoration-none" id="resetFilter" th:href="@{/commercants}">Supprimer
+			les filtres</a>
+	</div>
+</div>
+<hr class="featurette-divider mt-0 mb-3">
+<div class="container">
+
+	<form th:action="@{/commercants}" th:object="${searchCommercantForm}" method="post">
+		<div class="row">
+			<div class="col-12 mb-3">
+				<label for="keyword" class="col-form-label">Nom</label>
+				<input th:field="*{keyword}" type="text" id="keyword" placeholder="Rechercher par nom"
+				       class="form-control">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-form-label col-12">Catégories</div>
+		</div>
+		<div class="row my-2 py-2 border-top border-bottom">
+			<th:block th:each="category : ${categoryList}">
+				<div class="col-3">
+					<div class="form-check pl-0">
+						<input type="checkbox" th:id="${'categories_' + category.id}" th:value="${category.id}"
+						       th:field="*{categories}">
+						<label th:for="${'categories_' + category.id}" th:text="${category.name}" class="m-0"></label>
+					</div>
+				</div>
+			</th:block>
+		</div>
+		<div class="row">
+			<div class="col-2">
+				<label for="departement" class="col-form-label">Département</label>
+				<input id="departement" type="text" th:field="*{departement}" pattern="^([0-9]{2})|(2[AB])|(97[12346])$"
+				       class="form-control">
+			</div>
+			<div class="col-4">
+				<label for="ville" class="col-form-label">Ville</label>
+				<input id="ville" type="text" th:field="*{ville}" class="form-control">
+			</div>
+			<div class="col-6 mb-3">
+				<label for="adresse" class="col-form-label">Adresse</label>
+				<input id="adresse" type="text" th:field="*{adresse}" class="form-control">
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="col-12">
+				<input type="submit" value="Rechercher" class="btn btn-primary">
+			</div>
+		</div>
+	</form>
+</div>
+<h2 class="container mt-0">Résultats</h2>
+<hr class="featurette-divider mt-0 mb-0">
+<div class="container">
+	<p th:if="${#lists.isEmpty(commercants)}">Aucun résultat</p>
+	<th:block th:unless="${#lists.isEmpty(commercants)}" th:each="commercant : ${commercants}">
+		<div class="card mt-4">
+			<div class="card-body">
+				<div class="d-flex flex-row align-items-center justify-content-between mb-3">
+					<h2 class="d-inline m-0" th:text="${commercant.name}"></h2>
+					<p class="d-inline m-0 " th:text="${commercant.category.name}"></p>
+				</div>
+				<p th:text="${commercant.description}"></p>
+				<div class="d-flex flex-row align-items-center justify-content-between">
+					<div>
+						<p th:text="${commercant.ville + ' (' + commercant.departement + ')'}" class="m-0"></p>
+						<p th:text="${commercant.addresse}"></p>
+					</div>
+					<a class="btn btn-dark" th:href="@{/commercants/{id}(id=${commercant.id})}">Paniers proposés</a>
+				</div>
+			</div>
+		</div>
+	</th:block>
+</div>
+</body>
+</html>
